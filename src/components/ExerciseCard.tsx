@@ -1,5 +1,6 @@
 import { Book, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useNavigate } from "react-router-dom";
 
 interface ExerciseCardProps {
   title: string;
@@ -16,16 +17,25 @@ export const ExerciseCard = ({
   completed = false,
   className,
 }: ExerciseCardProps) => {
+  const navigate = useNavigate();
+  
   const difficultyColors = {
     beginner: "bg-green-100 text-green-700",
     intermediate: "bg-yellow-100 text-yellow-700",
     advanced: "bg-red-100 text-red-700",
   };
 
+  const handleClick = () => {
+    // Convert title to URL-friendly format
+    const exerciseId = title.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+    navigate(`/exercise/${exerciseId}`);
+  };
+
   return (
     <div
+      onClick={handleClick}
       className={cn(
-        "group relative overflow-hidden rounded-lg border p-6 transition-smooth hover-scale",
+        "group relative overflow-hidden rounded-lg border p-6 transition-smooth hover-scale cursor-pointer",
         className
       )}
     >
