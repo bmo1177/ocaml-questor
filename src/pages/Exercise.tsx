@@ -1,9 +1,55 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { Check, X } from "lucide-react";
+import { Check, Loader } from "lucide-react";
+
+// Mock exercise database - in a real app, this would come from a backend
+const exerciseDatabase = {
+  "hello-ocaml": {
+    title: "Hello, OCaml!",
+    description: "Write your first OCaml program to print 'Hello, World!'",
+    expectedOutput: "Hello, World!",
+    hint: "Use the 'print_endline' function",
+    points: 10,
+  },
+  "basic-arithmetic": {
+    title: "Basic Arithmetic",
+    description: "Practice basic arithmetic operations in OCaml (+, -, *, /)",
+    expectedOutput: "42",
+    hint: "Try combining different arithmetic operators",
+    points: 15,
+  },
+  "simple-functions": {
+    title: "Simple Functions",
+    description: "Create a function to calculate the area of a rectangle",
+    expectedOutput: "let area l w = l * w",
+    hint: "Define a function that takes two parameters",
+    points: 20,
+  },
+  "list-basics": {
+    title: "List Basics",
+    description: "Learn to create and manipulate simple lists in OCaml",
+    expectedOutput: "[1; 2; 3]",
+    hint: "Use the :: operator or [] syntax",
+    points: 25,
+  },
+  "string-operations": {
+    title: "String Operations",
+    description: "Practice basic string operations and concatenation",
+    expectedOutput: "Hello OCaml",
+    hint: "Use the ^ operator for string concatenation",
+    points: 20,
+  },
+  "basic-pattern-matching": {
+    title: "Basic Pattern Matching",
+    description: "Learn simple pattern matching with numbers and lists",
+    expectedOutput: "match x with | [] -> 0 | _ -> 1",
+    hint: "Use the match ... with syntax",
+    points: 30,
+  }
+};
 
 const Exercise = () => {
   const { id } = useParams();
@@ -11,19 +57,32 @@ const Exercise = () => {
   const { toast } = useToast();
   const [code, setCode] = useState("");
   const [isCorrect, setIsCorrect] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [exercise, setExercise] = useState<any>(null);
 
-  // Mock exercise data - in a real app, this would come from a backend
-  const exercise = {
-    title: "Hello, OCaml!",
-    description: "Write your first OCaml program to print 'Hello, World!'",
-    expectedOutput: "Hello, World!",
-    hint: "Use the 'print_endline' function",
-    points: 10,
-  };
+  useEffect(() => {
+    // Simulate loading exercise data
+    setLoading(true);
+    setTimeout(() => {
+      if (id && exerciseDatabase[id]) {
+        setExercise(exerciseDatabase[id]);
+      } else {
+        toast({
+          title: "Exercise not found",
+          description: "This exercise doesn't exist",
+          variant: "destructive",
+        });
+        navigate("/");
+      }
+      setLoading(false);
+    }, 500);
+  }, [id, navigate, toast]);
 
   const checkSolution = () => {
+    if (!exercise) return;
+
     // Mock validation - in a real app, this would be handled by a backend
-    const isValid = code.includes('print_endline "Hello, World!"');
+    const isValid = code.includes(exercise.expectedOutput);
     setIsCorrect(isValid);
 
     if (isValid) {
@@ -34,11 +93,26 @@ const Exercise = () => {
     } else {
       toast({
         title: "Not quite right",
-        description: "Try again! Remember to use print_endline",
+        description: "Try again! Check the hint for help",
         variant: "destructive",
       });
     }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen animate-fade-in bg-background p-8 flex items-center justify-center">
+        <div className="flex items-center gap-2">
+          <Loader className="h-6 w-6 animate-spin" />
+          <span>Loading exercise...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (!exercise) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen animate-fade-in bg-background p-8">
